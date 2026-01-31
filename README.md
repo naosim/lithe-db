@@ -227,6 +227,17 @@ git push origin main --tags
 
 タグが push されると GitHub Actions が自動的に起動し、リポジトリの **Releases** ページに最新のビルド済みファイル（`lithe-db.global.js` など）が公開されます。
 
+## 配布ファイル (dist)
+
+`dist` ディレクトリには、さまざまな環境で利用できるようにビルドされたファイルが含まれています。
+
+- **`lithe-db.js`**: ES Modules (ESM) 形式。モダンな Node.js 環境や、Vite/Webpack などのビルドールを使用するプロジェクトに最適です。
+- **`lithe-db.cjs`**: CommonJS (CJS) 形式。従来の `require()` を使用する Node.js 環境向けです。
+- **`lithe-db.global.js`**: IIFE 形式。ビルドツールを使わずに、ブラウザで `<script>` タグから直接読み込む場合に使用します。グローバル変数 `LitheDB` としてアクセスできます。
+- **`lithe-db.d.ts`**: ES Modules 向けの TypeScript 型定義ファイルです。
+- **`lithe-db.d.cts`**: CommonJS 向けの TypeScript 型定義ファイルです。
+- **`*.map`**: ソースマップファイルです。デバッグ時に元のソースコードとの対応関係を確認するために使用されます。
+
 ## 技術スタック
 - 言語: JavaScript (ES Modules)
 - 互換性: Node.js (16+), 各種モダンブラウザ
