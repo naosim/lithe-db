@@ -1,6 +1,6 @@
 {
   "name": "jsondb",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "JSONファイルに保存する、AIフレンドリーな軽量データベース。",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
