@@ -54,12 +54,13 @@ jobs:
           name: dist-files
           path: dist
 
-      - name: Zip for Release
-        run: zip -r lithe-db-dist.zip dist/
-
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: lithe-db-dist.zip
+          files: |
+            dist/index.js
+            dist/index.cjs
+            dist/index.global.js
+            dist/index.d.ts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
