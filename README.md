@@ -206,16 +206,23 @@ npm run test:watch
 ## 配布・リリース
 
 ### リリースの作成方法
-新しいバージョンをリリースし、ビルド済みファイルを配布するには、以下の手順でタグを作成して push してください。
+`package.json` のバージョン更新と Git タグの作成を同時に行うため、`npm version` コマンドを使用してください。目的によって以下の3つを使い分けます。
 
 ```bash
-# バージョンタグの作成 (vからはじまる形式)
-git tag v1.0.1
-# タグをGitHubにpush
-git push origin v1.0.1
+# 1. パッチリリース (バグ修正など: 1.0.0 -> 1.0.1)
+npm version patch
+
+# 2. マイナーリリース (機能追加など: 1.0.0 -> 1.1.0)
+npm version minor
+
+# 3. メジャーリリース (破壊的変更など: 1.0.0 -> 2.0.0)
+npm version major
+
+# GitHubにコードとタグを送信
+git push origin main --tags
 ```
 
-タグが push されると GitHub Actions が自動的に起動し、リポジトリの **Releases** ページにビルド済みファイル（`lithe-db-dist.zip`）が添付された状態で公開されます。
+タグが push されると GitHub Actions が自動的に起動し、リポジトリの **Releases** ページに最新のビルド済みファイル（`index.global.js` など）が公開されます。
 
 ## 技術スタック
 - 言語: JavaScript (ES Modules)
