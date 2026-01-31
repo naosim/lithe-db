@@ -203,6 +203,20 @@ npm test
 npm run test:watch
 ```
 
+## 配布・リリース
+
+### リリースの作成方法
+新しいバージョンをリリースし、ビルド済みファイルを配布するには、以下の手順でタグを作成して push してください。
+
+```bash
+# バージョンタグの作成 (vからはじまる形式)
+git tag v1.0.1
+# タグをGitHubにpush
+git push origin v1.0.1
+```
+
+タグが push されると GitHub Actions が自動的に起動し、リポジトリの **Releases** ページにビルド済みファイル（`lithe-db-dist.zip`）が添付された状態で公開されます。
+
 ## 技術スタック
 - 言語: JavaScript (ES Modules)
 - 互換性: Node.js (16+), 各種モダンブラウザ
