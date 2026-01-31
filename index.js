@@ -1,3 +1,4 @@
+import LitheDB from './src/LitheDB.js';
 import { FileStorage, MemoryStorage, LocalStorage, GoogleSheetsStorage, GASStorage } from './src/Storage.js';
 
 LitheDB.FileStorage = FileStorage;
