@@ -12,8 +12,12 @@
       "require": "./dist/index.cjs"
     }
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "node build.js",
+    "prepublishOnly": "npm run build",
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest"
