@@ -211,7 +211,9 @@ export class GoogleSheetsStorage extends Storage {
   async _getSheetsClient() {
     if (this._sheets) return this._sheets;
     try {
-      const { google } = await import('googleapis');
+      // バンドラーの静的解析を避けるため、文字列を連結してロード
+      const g = ['google', 'apis'].join('');
+      const { google } = (typeof require === 'function') ? require(g) : await import(g);
       this._sheets = google.sheets({ version: 'v4', auth: this.auth });
       return this._sheets;
     } catch (error) {
@@ -223,7 +225,7 @@ export class GoogleSheetsStorage extends Storage {
     const sheets = await this._getSheetsClient();
     try {
       const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId: this.spreadsheetId });
-      const sheetNames = spreadsheet.data.sheets.map(s => s.properties.title);
+      const sheetNames = spreadsheet.data.sheets.map((/** @type {any} */ s) => s.properties.title);
 
       const db = { metadata: { indices: {}, relations: {}, serial: 0 }, data: {} };
 
@@ -246,9 +248,9 @@ export class GoogleSheetsStorage extends Storage {
         } else if (!name.endsWith('.bak')) {
           const headers = rows[0];
           const dataRows = rows.slice(1);
-          db.data[name] = dataRows.map(row => {
+          db.data[name] = dataRows.map((/** @type {any} */ row) => {
             const doc = {};
-            headers.forEach((header, i) => {
+            headers.forEach((/** @type {any} */ header, /** @type {number} */ i) => {
               let val = row[i];
               if (val === undefined || val === '') {
                 val = null;

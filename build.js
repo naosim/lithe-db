@@ -1,4 +1,4 @@
-import { defineConfig } from 'tsup';
+import { build } from 'tsup';
 
 const banner = `
 /**
@@ -16,19 +16,25 @@ const banner = `
  */
 `;
 
-export default defineConfig({
-  entry: ['index.js'],
-  format: ['cjs', 'esm', 'iife'],
-  globalName: 'LitheDB',
-  dts: true,
-  splitting: false,
-  sourcemap: true,
-  clean: true,
-  minify: false, // AI解析のために可読性を維持
-  outDir: 'dist',
-  platform: 'node',
-  external: ['node:fs/promises', 'googleapis'],
-  banner: {
-    js: banner,
-  },
-});
+try {
+  await build({
+    entry: ['index.js'],
+    format: ['cjs', 'esm', 'iife'],
+    globalName: 'LitheDB',
+    dts: true,
+    splitting: false,
+    sourcemap: true,
+    clean: true,
+    minify: false,
+    outDir: 'dist',
+    platform: 'node',
+    external: ['node:fs/promises', 'googleapis'],
+    banner: {
+      js: banner,
+    },
+  });
+  console.log('Build successful!');
+} catch (error) {
+  console.error('Build failed:', error);
+  process.exit(1);
+}
