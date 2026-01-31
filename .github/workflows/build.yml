@@ -58,9 +58,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/index.js
-            dist/index.cjs
-            dist/index.global.js
-            dist/index.d.ts
+            dist/lithe-db.js
+            dist/lithe-db.cjs
+            dist/lithe-db.global.js
+            dist/lithe-db.d.ts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

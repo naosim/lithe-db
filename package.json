@@ -2,14 +2,14 @@
   "name": "jsondb",
   "version": "1.2.3",
   "description": "JSONファイルに保存する、AIフレンドリーな軽量データベース。",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/lithe-db.cjs",
+  "module": "./dist/lithe-db.js",
+  "types": "./dist/lithe-db.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/lithe-db.d.ts",
+      "import": "./dist/lithe-db.js",
+      "require": "./dist/lithe-db.cjs"
     }
   },
   "files": [

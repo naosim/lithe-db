@@ -208,6 +208,9 @@ npm run test:watch
 ### リリースの作成方法
 `package.json` のバージョン更新と Git タグの作成を同時に行うため、`npm version` コマンドを使用してください。目的によって以下の3つを使い分けます。
 
+> [!IMPORTANT]
+> GitHubのセキュリティ上の制限により、手元の環境から `.github/workflows/build.yml` を push できない場合があります。その場合は、[GitHubサイト上で直接編集](https://github.com/naosim/lithe-db/blob/main/.github/workflows/build.yml)を行ってください。
+
 ```bash
 # 1. パッチリリース (バグ修正など: 1.0.0 -> 1.0.1)
 npm version patch
@@ -222,7 +225,7 @@ npm version major
 git push origin main --tags
 ```
 
-タグが push されると GitHub Actions が自動的に起動し、リポジトリの **Releases** ページに最新のビルド済みファイル（`index.global.js` など）が公開されます。
+タグが push されると GitHub Actions が自動的に起動し、リポジトリの **Releases** ページに最新のビルド済みファイル（`lithe-db.global.js` など）が公開されます。
 
 ## 技術スタック
 - 言語: JavaScript (ES Modules)
