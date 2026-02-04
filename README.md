@@ -27,10 +27,14 @@ npm install lithe-db
 
 ```javascript
 import LitheDB from 'lithe-db';
-const db = new LitheDB('database.json');
 
-// コレクションの取得とデータの挿入
+// データベースの初期設定（Node.js/ブラウザ環境を自動判別して初期化）
+const db = await LitheDB.create('database.json');
+
+// コレクションの取得
 const users = db.collection('users');
+
+// データの挿入
 const newUser = await users.insert({
   name: '田中 太郎',
   email: 'tanaka@example.com'
@@ -45,10 +49,16 @@ const user = await users.findOne({ email: 'tanaka@example.com' });
 // リレーションの設定（メタデータ）
 db.defineRelation('posts', 'author_email', { ref: 'users', field: 'email' });
 
-// リレーションを含むデータの取得
+// ポスト（他コレクション）の挿入
 const posts = db.collection('posts');
-const postWithUser = await posts.findOne({ id: '000002_posts' }, { populate: true });
-console.log(postWithUser.author_email.name); // ユーザーオブジェクトが展開される
+await posts.insert({
+  title: 'はじめての投稿',
+  author_email: 'tanaka@example.com'
+});
+
+// リレーションを含むデータの取得（populate: true で関連データを展開）
+const postWithUser = await posts.findOne({ author_email: 'tanaka@example.com' }, { populate: true });
+console.log(postWithUser.author_email.name); // ユーザーオブジェクトの "田中 太郎" が表示される
 ```
 
 ## データ形式
@@ -135,6 +145,7 @@ console.log(postWithUser.author_email.name); // ユーザーオブジェクト�
 - `new LitheDB(storage, options)`
   - `storage`: ストレージアダプター、または保存先のファイルパス（文字列）。
   - `options`: `{ backup: boolean }` などの設定。
+  - **注意**: コンストラクタで生成した場合は、使用前に必ず `await db.load()` を呼び出してデータを読み込む必要があります。後述の `LitheDB.create()` を使用すると、インスタンス化とロードを同時に行えるため推奨されます。
 - `LitheDB.create(target, options)` (Static)
   - **自動環境判別**: 実行環境を自動的に判別し、最適なストレージアダプターを選択します。
     - **Node.js環境**: `FileStorage` を使用します。`target` 省略時はデフォルトで `'database.json'` が使用されます。
