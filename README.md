@@ -61,6 +61,55 @@ const postWithUser = await posts.findOne({ author_email: 'tanaka@example.com' },
 console.log(postWithUser.author_email.name); // ユーザーオブジェクトの "田中 太郎" が表示される
 ```
 
+## CLI の使い方
+
+`lithe-db` はターミナルから直接操作することも可能です。
+
+### セットアップ
+
+#### コマンドとして登録する場合
+プロジェクト内で以下のコマンドを実行することで、`lithe-db` コマンドが入利用可能になります。
+
+```bash
+npm link
+```
+
+#### 直接実行する場合
+リリースの成果物やビルド済みのファイルを直接実行することも可能です。
+
+```bash
+node dist/cli.js --help
+```
+
+### 基本コマンド
+
+```bash
+# データの挿入
+lithe-db insert users '{"name": "田中", "email": "tanaka@example.com"}' -p
+
+# データの検索（全件）
+lithe-db find users -p
+
+# データの検索（条件指定）
+lithe-db find users '{"email": "tanaka@example.com"}' -p
+
+# リレーションの定義
+lithe-db relation posts author_email --ref users --ref-field email
+
+# リレーションを展開して検索
+lithe-db find posts --populate -p
+```
+
+### 主要オプション
+
+- `-d, --db <path>`: データベースファイルのパスを指定（デフォルト: `database.json`）
+- `-p, --pretty`: 結果を整形された JSON で表示
+- `--populate`: リレーション先を実データに展開
+- `--sort <json>`: ソート条件を指定（例: `'{"id": "desc"}'`）
+- `--limit <n>`: 取得件数を制限
+- `--ref <collection>`: `relation` コマンド用の参照先コレクション名
+- `--unique`: `index` コマンド用のユニーク制約設定
+
 ## データ形式
 
 データは `data` セクションにコレクションごと、`metadata` セクションにインデックス情報などが保存されます。

@@ -12,6 +12,9 @@
       "require": "./dist/lithe-db.cjs"
     }
   },
+  "bin": {
+    "lithe-db": "./dist/cli.js"
+  },
   "files": [
     "dist"
   ],

@@ -19,7 +19,8 @@ const banner = `
 try {
   await build({
     entry: {
-      'lithe-db': 'index.js'
+      'lithe-db': 'index.js',
+      'cli': 'src/cli.js'
     },
     format: ['cjs', 'esm', 'iife'],
     globalName: 'LitheDB',

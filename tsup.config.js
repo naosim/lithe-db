@@ -17,7 +17,10 @@ const banner = `
 `;
 
 export default defineConfig({
-  entry: ['index.js'],
+  entry: {
+    'lithe-db': 'index.js',
+    'cli': 'src/cli.js'
+  },
   format: ['cjs', 'esm', 'iife'],
   globalName: 'LitheDB',
   dts: true,
