@@ -1,6 +1,6 @@
 {
   "name": "jsondb",
-  "version": "1.2.4",
+  "version": "1.3.0",
   "description": "JSONファイルに保存する、AIフレンドリーな軽量データベース。",
   "main": "./dist/lithe-db.cjs",
   "module": "./dist/lithe-db.js",
