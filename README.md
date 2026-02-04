@@ -93,6 +93,9 @@ lithe-db find users -p
 # データの検索（条件指定）
 lithe-db find users '{"email": "tanaka@example.com"}' -p
 
+# テキスト形式で整形表示（ネストした構造も見やすく表示）
+lithe-db find users -f text
+
 # リレーションの定義
 lithe-db relation posts author_email --ref users --ref-field email
 
@@ -104,6 +107,7 @@ lithe-db find posts --populate -p
 
 - `-d, --db <path>`: データベースファイルのパスを指定（デフォルト: `database.json`）
 - `-p, --pretty`: 結果を整形された JSON で表示
+- `-f, --format <type>`: 出力形式を指定。`json`（デフォルト）または `text` を選択可能
 - `--populate`: リレーション先を実データに展開
 - `--sort <json>`: ソート条件を指定（例: `'{"id": "desc"}'`）
 - `--limit <n>`: 取得件数を制限

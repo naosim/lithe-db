@@ -6,6 +6,7 @@ async function run() {
   const options = {
     db: 'database.json',
     pretty: false,
+    format: 'json',
     populate: false,
     unique: false,
     ref: null,
@@ -22,6 +23,8 @@ async function run() {
       options.db = args[++i];
     } else if (arg === '-p' || arg === '--pretty') {
       options.pretty = true;
+    } else if (arg === '-f' || arg === '--format') {
+      options.format = args[++i];
     } else if (arg === '--populate') {
       options.populate = true;
     } else if (arg === '--unique') {
@@ -57,7 +60,7 @@ async function run() {
         if (!collectionName || !rest[0]) throw new Error('Usage: insert <collection> <json>');
         const data = JSON.parse(rest[0]);
         const result = await db.collection(collectionName).insert(data);
-        printResult(result, options.pretty);
+        printResult(result, options);
         break;
       }
       case 'find': {
@@ -70,7 +73,7 @@ async function run() {
         if (options.limit !== null) {
           results = results.slice(0, options.limit);
         }
-        printResult(results, options.pretty);
+        printResult(results, options);
         break;
       }
       case 'findOne': {
@@ -79,7 +82,7 @@ async function run() {
         const result = await db.collection(collectionName).findOne(query, {
           populate: options.populate
         });
-        printResult(result, options.pretty);
+        printResult(result, options);
         break;
       }
       case 'update': {
@@ -87,14 +90,14 @@ async function run() {
         const query = JSON.parse(rest[0]);
         const updateData = JSON.parse(rest[1]);
         const count = await db.collection(collectionName).update(query, updateData);
-        printResult({ updated: count }, options.pretty);
+        printResult({ updated: count }, options);
         break;
       }
       case 'remove': {
         if (!collectionName || !rest[0]) throw new Error('Usage: remove <collection> <query_json>');
         const query = JSON.parse(rest[0]);
         const count = await db.collection(collectionName).remove(query);
-        printResult({ removed: count }, options.pretty);
+        printResult({ removed: count }, options);
         break;
       }
       case 'index': {
@@ -102,7 +105,7 @@ async function run() {
         if (!collectionName || !field) throw new Error('Usage: index <collection> <field> [--unique]');
         db.createIndex(collectionName, field, { unique: options.unique });
         await db._save();
-        printResult({ message: `Index created on ${collectionName}.${field}` }, options.pretty);
+        printResult({ message: `Index created on ${collectionName}.${field}` }, options);
         break;
       }
       case 'relation': {
@@ -110,7 +113,7 @@ async function run() {
         if (!collectionName || !field || !options.ref) throw new Error('Usage: relation <collection> <field> --ref <ref_collection> [--ref-field <field>]');
         db.defineRelation(collectionName, field, { ref: options.ref, field: options.refField });
         await db._save();
-        printResult({ message: `Relation defined: ${collectionName}.${field} -> ${options.ref}.${options.refField}` }, options.pretty);
+        printResult({ message: `Relation defined: ${collectionName}.${field} -> ${options.ref}.${options.refField}` }, options);
         break;
       }
       default:
@@ -124,12 +127,53 @@ async function run() {
   }
 }
 
-function printResult(result, pretty) {
+function printResult(result, options) {
   if (result === null || result === undefined) {
     console.log('null');
-  } else {
-    console.log(JSON.stringify(result, null, pretty ? 2 : 0));
+    return;
   }
+
+  if (options.format === 'text') {
+    if (Array.isArray(result)) {
+      result.forEach((item, index) => {
+        const id = item.id || 'N/A';
+        console.log(`[ Record ${index + 1}: ${id} ]`);
+        console.log(formatToText(item).trimStart());
+        console.log('\n' + '-'.repeat(50) + '\n');
+      });
+    } else {
+      console.log(formatToText(result).trimStart());
+    }
+  } else {
+    console.log(JSON.stringify(result, null, options.pretty ? 2 : 0));
+  }
+}
+
+function formatToText(data, indent = 0) {
+  const spaces = '  '.repeat(indent);
+  if (data === null) return 'null';
+  if (typeof data !== 'object') return String(data);
+
+  if (Array.isArray(data)) {
+    if (data.length === 0) return '[]';
+    return `(Array[${data.length}])` + data.map(item => {
+      return `\n${spaces}- ${formatToText(item, indent + 1).trimStart()}`;
+    }).join('');
+  }
+
+  const keys = Object.keys(data);
+  if (keys.length === 0) return '{}';
+
+  const maxKeyLen = Math.max(...keys.map(k => k.length));
+  return keys.map(key => {
+    const val = data[key];
+    const keyStr = key.padEnd(maxKeyLen);
+
+    if (typeof val === 'object' && val !== null) {
+      return `\n${spaces}${keyStr} : ${formatToText(val, indent + 1)}`;
+    }
+    return `\n${spaces}${keyStr} : ${val}`;
+  }).join('');
 }
 
 function printHelp() {
@@ -151,6 +195,7 @@ Commands:
 Options:
   -d, --db <path>       Database file path (default: database.json)
   -p, --pretty          Pretty print JSON output
+  -f, --format <type>   Output format: json, text (default: json)
   --populate            Populate relations in find/findOne
   --sort <json>         Sort results (e.g. '{"id":"desc"}')
   --limit <n>           Limit number of results
