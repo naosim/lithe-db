@@ -62,5 +62,7 @@ jobs:
             dist/lithe-db.cjs
             dist/lithe-db.global.js
             dist/lithe-db.d.ts
+            dist/cli.js
+            dist/cli.cjs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
