@@ -116,6 +116,7 @@ export default class Collection {
    * @throws {Error} 更新によってユニーク制約に違反する場合にスローされます。
    */
   async update(query, updateData) {
+    const { id, created_at, updated_at, ...filteredUpdateData } = updateData;
     const now = new Date().toISOString();
     let count = 0;
     const targets = this._data.filter(doc => this._match(doc, query));
@@ -124,15 +125,15 @@ export default class Collection {
       // 更新対象のフィールドに対するユニーク制約のチェック
       const indices = this.db._getIndices(this.name);
       for (const [field, options] of Object.entries(indices)) {
-        if (options.unique && updateData[field] !== undefined && updateData[field] !== doc[field]) {
-          const existing = await this.findOne({ [field]: updateData[field] });
+        if (options.unique && filteredUpdateData[field] !== undefined && filteredUpdateData[field] !== doc[field]) {
+          const existing = await this.findOne({ [field]: filteredUpdateData[field] });
           if (existing && existing.id !== doc.id) {
-            throw new Error(`Unique constraint violation: ${this.name}.${field} already exists with value ${updateData[field]}`);
+            throw new Error(`Unique constraint violation: ${this.name}.${field} already exists with value ${filteredUpdateData[field]}`);
           }
         }
       }
 
-      Object.assign(doc, updateData, { updated_at: now });
+      Object.assign(doc, filteredUpdateData, { updated_at: now });
       // リレーションが更新された場合の整合性チェック
       await this.db._checkRelations(this.name, doc);
       count++;
