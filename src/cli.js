@@ -52,6 +52,19 @@ async function run() {
 
   const [command, collectionName, ...rest] = commandArgs;
 
+  const parseQuery = (str) => {
+    if (!str) return {};
+    try {
+      if (str.trim().startsWith('{')) {
+        return JSON.parse(str);
+      }
+    } catch (e) {
+      // JSON解析に失敗した場合は関数として扱う試みへ
+    }
+    // 文字列をJavaScript関数として評価
+    return new Function('doc', `return (${str})(doc)`);
+  };
+
   try {
     const db = await LitheDB.create(options.db);
 
@@ -64,8 +77,8 @@ async function run() {
         break;
       }
       case 'find': {
-        if (!collectionName) throw new Error('Usage: find <collection> [query_json]');
-        const query = rest[0] ? JSON.parse(rest[0]) : {};
+        if (!collectionName) throw new Error('Usage: find <collection> [query]');
+        const query = parseQuery(rest[0]);
         let results = await db.collection(collectionName).find(query, {
           populate: options.populate,
           sort: options.sort
@@ -77,8 +90,8 @@ async function run() {
         break;
       }
       case 'findOne': {
-        if (!collectionName || !rest[0]) throw new Error('Usage: findOne <collection> <query_json>');
-        const query = JSON.parse(rest[0]);
+        if (!collectionName || !rest[0]) throw new Error('Usage: findOne <collection> <query>');
+        const query = parseQuery(rest[0]);
         const result = await db.collection(collectionName).findOne(query, {
           populate: options.populate
         });
@@ -86,16 +99,16 @@ async function run() {
         break;
       }
       case 'update': {
-        if (!collectionName || !rest[0] || !rest[1]) throw new Error('Usage: update <collection> <query_json> <update_json>');
-        const query = JSON.parse(rest[0]);
+        if (!collectionName || !rest[0] || !rest[1]) throw new Error('Usage: update <collection> <query> <update_json>');
+        const query = parseQuery(rest[0]);
         const updateData = JSON.parse(rest[1]);
         const count = await db.collection(collectionName).update(query, updateData);
         printResult({ updated: count }, options);
         break;
       }
       case 'remove': {
-        if (!collectionName || !rest[0]) throw new Error('Usage: remove <collection> <query_json>');
-        const query = JSON.parse(rest[0]);
+        if (!collectionName || !rest[0]) throw new Error('Usage: remove <collection> <query>');
+        const query = parseQuery(rest[0]);
         const count = await db.collection(collectionName).remove(query);
         printResult({ removed: count }, options);
         break;

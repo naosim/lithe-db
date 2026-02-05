@@ -170,7 +170,13 @@ export default class Collection {
    * @private
    */
   _match(doc, query) {
+    if (typeof query === 'function') {
+      return query(doc);
+    }
     return Object.entries(query).every(([key, value]) => {
+      if (typeof value === 'function') {
+        return value(doc[key]);
+      }
       if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
         return JSON.stringify(doc[key]) === JSON.stringify(value);
       }

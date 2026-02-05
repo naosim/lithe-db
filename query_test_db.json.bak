@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "indices": {},
+    "relations": {},
+    "serial": 2
+  },
+  "data": {
+    "users": [
+      {
+        "name": "Alice",
+        "age": 25,
+        "id": "000001_users",
+        "created_at": "2026-02-05T20:46:11.461Z",
+        "updated_at": "2026-02-05T20:46:11.461Z"
+      },
+      {
+        "name": "Bob",
+        "age": 30,
+        "id": "000002_users",
+        "created_at": "2026-02-05T20:46:11.464Z",
+        "updated_at": "2026-02-05T20:46:11.464Z"
+      }
+    ]
+  }
+}
