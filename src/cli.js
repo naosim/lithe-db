@@ -121,6 +121,17 @@ async function run() {
         printResult(result, options);
         break;
       }
+      case 'schema': {
+        if (!collectionName) throw new Error('Usage: schema <collection>');
+        const schema = db.collection(collectionName).getSchema();
+        if (options.format === 'text') {
+          console.log(`[ Schema: ${collectionName} ]`);
+          console.log(formatSchemaToText(schema).trimStart());
+        } else {
+          console.log(JSON.stringify(schema, null, options.pretty ? 2 : 0));
+        }
+        break;
+      }
       case 'index': {
         const field = rest[0];
         if (!collectionName || !field) throw new Error('Usage: index <collection> <field> [--unique]');
@@ -197,6 +208,27 @@ function formatToText(data, indent = 0) {
   }).join('');
 }
 
+function formatSchemaToText(schema, indent = 0) {
+  if (!schema.properties) return '';
+  const spaces = '  '.repeat(indent);
+  const keys = Object.keys(schema.properties);
+  const maxKeyLen = Math.max(...keys.map(k => k.length), 0);
+  const requiredFields = schema.required || [];
+
+  return keys.map(key => {
+    const prop = schema.properties[key];
+    const keyStr = key.padEnd(maxKeyLen);
+    const isRequired = requiredFields.includes(key);
+    const reqStr = isRequired ? '(Required)' : '(Optional)';
+
+    let result = `\n${spaces}${keyStr} : ${prop.type.padEnd(8)} ${reqStr}`;
+    if (prop.type === 'object' && prop.properties) {
+      result += formatSchemaToText(prop, indent + 1);
+    }
+    return result;
+  }).join('');
+}
+
 function printHelp() {
   console.log(`
 LitheDB CLI - AI-friendly lightweight JSON database
@@ -211,6 +243,7 @@ Commands:
   update <collection> <query> <update>     Update records matching query
   remove <collection> <query>               Remove records matching query
   upsert <collection> <query> <data>       Update if exists, otherwise insert
+  schema <collection>                      Analyze and show collection schema
   index <collection> <field>               Create an index (use --unique for unique constraint)
   relation <collection> <field>            Define a relation (requires --ref)
 

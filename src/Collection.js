@@ -232,6 +232,77 @@ export default class Collection {
   }
 
   /**
+   * コレクションのデータ構造を解析し、JSON Schema形式の定義を生成します。
+   * 
+   * @returns {Object} 生成されたスキーマオブジェクト。
+   */
+  getSchema() {
+    const docs = this._data;
+    if (docs.length === 0) return { type: 'object', properties: {}, required: [] };
+
+    // 解析から除外するシステムフィールド（トップレベルのみ）
+    const systemFields = ['id', 'created_at', 'updated_at'];
+
+    const analyze = (objects, isRoot = false) => {
+      if (objects.length === 0) return { type: 'any' };
+
+      const keys = new Set();
+      objects.forEach(obj => {
+        if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+          Object.keys(obj).forEach(k => {
+            if (!(isRoot && systemFields.includes(k))) keys.add(k);
+          });
+        }
+      });
+
+      const properties = {};
+      const required = [];
+
+      keys.forEach(key => {
+        const values = objects
+          .map(obj => (obj && typeof obj === 'object') ? obj[key] : undefined)
+          .filter(v => v !== undefined);
+
+        // その階層の全ドキュメントにキーが存在すれば必須とする
+        if (values.length === objects.length) {
+          required.push(key);
+        }
+
+        if (values.length === 0) return;
+
+        // 型の判定
+        const types = new Set(values.map(v => {
+          if (v === null) return 'null';
+          if (Array.isArray(v)) return 'array';
+          return typeof v;
+        }));
+
+        let typeStr;
+        if (types.size > 1) {
+          typeStr = 'any';
+        } else {
+          typeStr = [...types][0];
+        }
+
+        const schemaNode = { type: typeStr };
+        // オブジェクトの場合は再帰的に解析
+        if (typeStr === 'object') {
+          const nested = analyze(values, false);
+          schemaNode.properties = nested.properties;
+          if (nested.required.length > 0) {
+            schemaNode.required = nested.required;
+          }
+        }
+        properties[key] = schemaNode;
+      });
+
+      return { type: 'object', properties, required };
+    };
+
+    return analyze(docs, true);
+  }
+
+  /**
    * クエリマッチングのための内部ヘルパー。
    * 値の完全一致およびネストされたオブジェクトのJSON比較をサポートします。
    * 

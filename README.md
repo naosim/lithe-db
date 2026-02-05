@@ -234,7 +234,25 @@ lithe-db find posts --populate -p
 - `update(query, data)`: クエリに一致するレコードを更新し、`updated_at` を書き換えます。
 - `remove(query)`: クエリに一致するレコードを削除します。
 - `upsert(query, data)`: クエリに一致するレコードがあれば更新し、なければ新規挿入します。
+- `getSchema()`: コレクションのデータ構造を解析し、JSON Schema形式の定義を返します。
 - `addHook(event, callback)`: 特定の操作の前後に実行されるフック（ミドルウェア）を登録します。
+
+### スキーマ解析 (Schema Analysis)
+既存のデータをスキャンして、自動的に型や必須フィールドを特定します。
+
+- **API**: `const schema = users.getSchema();`
+- **CLI**: `lithe-db schema users`
+
+#### 解析結果の例 (CLI text形式)
+```text
+[ Schema: users ]
+name        : string   (Required)
+profile     : object   (Required)
+  age       : any      (Required)
+  address   : object   (Optional)
+    city    : string   (Required)
+```
+型が混在しているフィールドは自動的に `any` と判定されます。
 
 ### フック (Hooks / Middleware)
 データの操作前後に特定の処理を自動実行できます。APIからのみ利用可能です。
