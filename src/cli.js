@@ -113,6 +113,14 @@ async function run() {
         printResult({ removed: count }, options);
         break;
       }
+      case 'upsert': {
+        if (!collectionName || !rest[0] || !rest[1]) throw new Error('Usage: upsert <collection> <query> <data_json>');
+        const query = parseQuery(rest[0]);
+        const data = JSON.parse(rest[1]);
+        const result = await db.collection(collectionName).upsert(query, data);
+        printResult(result, options);
+        break;
+      }
       case 'index': {
         const field = rest[0];
         if (!collectionName || !field) throw new Error('Usage: index <collection> <field> [--unique]');
@@ -202,6 +210,7 @@ Commands:
   findOne <collection> <query_json>        Find the first record matching query
   update <collection> <query> <update>     Update records matching query
   remove <collection> <query>               Remove records matching query
+  upsert <collection> <query> <data>       Update if exists, otherwise insert
   index <collection> <field>               Create an index (use --unique for unique constraint)
   relation <collection> <field>            Define a relation (requires --ref)
 

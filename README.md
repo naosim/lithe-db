@@ -233,6 +233,23 @@ lithe-db find posts --populate -p
 - `findOne(query, options)`: クエリに一致する最初の1件を返します。
 - `update(query, data)`: クエリに一致するレコードを更新し、`updated_at` を書き換えます。
 - `remove(query)`: クエリに一致するレコードを削除します。
+- `upsert(query, data)`: クエリに一致するレコードがあれば更新し、なければ新規挿入します。
+- `addHook(event, callback)`: 特定の操作の前後に実行されるフック（ミドルウェア）を登録します。
+
+### フック (Hooks / Middleware)
+データの操作前後に特定の処理を自動実行できます。APIからのみ利用可能です。
+
+- **`beforeInsert` / `afterInsert`**: 挿入前後の処理。
+- **`beforeUpdate` / `afterUpdate`**: 更新前後の処理。
+- **`beforeRemove` / `afterRemove`**: 削除前後の処理。
+- **`beforeUpsert` / `afterUpsert`**: Upsert操作の前後の処理。
+
+```javascript
+const users = db.collection('users');
+users.addHook('beforeInsert', async (doc) => {
+  doc.email = doc.email.toLowerCase(); // 正規化
+});
+```
 
 #### クエリとオプション
 - `query`: 検索条件を指定します。以下の形式が利用可能です。

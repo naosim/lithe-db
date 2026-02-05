@@ -10,6 +10,16 @@ export default class Collection {
   constructor(db, name) {
     this.db = db;
     this.name = name;
+    this.hooks = {
+      beforeInsert: [],
+      afterInsert: [],
+      beforeUpdate: [],
+      afterUpdate: [],
+      beforeRemove: [],
+      afterRemove: [],
+      beforeUpsert: [],
+      afterUpsert: []
+    };
   }
 
   /**
@@ -18,6 +28,28 @@ export default class Collection {
    */
   get _data() {
     return this.db._getCollectionData(this.name);
+  }
+
+  /**
+   * 特定のイベントに対してフック（ミドルウェア）を登録します。
+   * 
+   * @param {string} event - イベント名 ('beforeInsert', 'afterInsert', 'beforeUpdate', 'afterUpdate', 'beforeRemove', 'afterRemove', 'beforeUpsert', 'afterUpsert')。
+   * @param {Function} callback - 実行される非同期関数。
+   */
+  addHook(event, callback) {
+    if (this.hooks[event]) {
+      this.hooks[event].push(callback);
+    }
+  }
+
+  /**
+   * 登録されたフックを順番に実行します。
+   * @private
+   */
+  async _runHooks(event, ...args) {
+    for (const hook of this.hooks[event]) {
+      await hook(...args);
+    }
   }
 
   /**
@@ -30,6 +62,7 @@ export default class Collection {
    * @throws {Error} ユニーク制約違反やリレーション整合性エラーの場合にスローされます。
    */
   async insert(doc) {
+    await this._runHooks('beforeInsert', doc);
     // インデックスのチェック (ユニーク制約)
     const indices = this.db._getIndices(this.name);
     for (const [field, options] of Object.entries(indices)) {
@@ -55,7 +88,9 @@ export default class Collection {
 
     this._data.push(newDoc);
     await this.db._save();
-    return this._clone(newDoc);
+    const cloned = this._clone(newDoc);
+    await this._runHooks('afterInsert', cloned);
+    return cloned;
   }
 
   /**
@@ -116,6 +151,7 @@ export default class Collection {
    * @throws {Error} 更新によってユニーク制約に違反する場合にスローされます。
    */
   async update(query, updateData) {
+    await this._runHooks('beforeUpdate', query, updateData);
     const { id, created_at, updated_at, ...filteredUpdateData } = updateData;
     const now = new Date().toISOString();
     let count = 0;
@@ -142,7 +178,37 @@ export default class Collection {
     if (count > 0) {
       await this.db._save();
     }
+    // 更新後の各ドキュメントに対して個別に afterUpdate を呼ぶのは重いため、
+    // ここでは更新されたドキュメントのリストを取得して実行
+    if (count > 0) {
+      for (const doc of targets) {
+        await this._runHooks('afterUpdate', this._clone(doc));
+      }
+    }
     return count;
+  }
+
+  /**
+   * クエリに一致するドキュメントを更新、または存在しない場合は挿入します。
+   * 
+   * @param {Object} query - 対象を特定するクエリ。
+   * @param {Object} data - 更新または挿入するデータ。
+   * @returns {Promise<Object>} 処理されたドキュメント。
+   */
+  async upsert(query, data) {
+    await this._runHooks('beforeUpsert', query, data);
+    const existing = await this.findOne(query);
+
+    if (existing) {
+      await this.update({ id: existing.id }, data);
+      const updated = await this.findOne({ id: existing.id });
+      await this._runHooks('afterUpsert', updated, false);
+      return updated;
+    } else {
+      const inserted = await this.insert(data);
+      await this._runHooks('afterUpsert', inserted, true);
+      return inserted;
+    }
   }
 
   /**
@@ -152,6 +218,7 @@ export default class Collection {
    * @returns {Promise<number>} 削除されたドキュメントの数。
    */
   async remove(query) {
+    await this._runHooks('beforeRemove', query);
     const initialLength = this._data.length;
     const newData = this._data.filter(doc => !this._match(doc, query));
     const count = initialLength - newData.length;
@@ -160,6 +227,7 @@ export default class Collection {
       this.db._setCollectionData(this.name, newData);
       await this.db._save();
     }
+    await this._runHooks('afterRemove', count);
     return count;
   }
 
